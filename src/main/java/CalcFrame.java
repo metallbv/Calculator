@@ -29,6 +29,9 @@ public class CalcFrame extends JFrame {
     JButton buttonSub = new JButton("-");
     JButton buttonMul = new JButton("*");
     JButton buttonStart = new JButton("=");
+    JButton buttonSpace = new JButton("Space");
+    JButton buttonLeftBracket = new JButton("(");
+    JButton buttonRightBracket = new JButton(")");
     int firstValue = 0;
     String operation = "";
 
@@ -105,50 +108,77 @@ public class CalcFrame extends JFrame {
             }
         });
 
+        buttonSpace.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                display.setText(display.getText() + " ");
+            }
+        });
+
+        buttonLeftBracket.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                display.setText(display.getText() + "(");
+            }
+        });
+
+        buttonRightBracket.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                display.setText(display.getText() + ")");
+            }
+        });
+
         buttonBack.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String temp = display.getText();
-                display.setText(temp.substring(0, temp.length() - 1));
+                if (temp.length() > 0) {
+                    display.setText(temp.substring(0, temp.length() - 1));
+                }
             }
         });
 
         buttonSum.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                doOpeation(operation);
-                operation = "+";
+                /*doOpeation(operation);
+                operation = "+";*/
+                display.setText(display.getText() + "+");
             }
         });
 
         buttonMul.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                doOpeation(operation);
-                operation = "*";
+                /*doOpeation(operation);
+                operation = "*";*/
+                display.setText(display.getText() + "*");
             }
         });
 
         buttonDivide.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                doOpeation(operation);
-                operation = "/";
+                /*doOpeation(operation);
+                operation = "/";*/
+                display.setText(display.getText() + "/");
             }
         });
 
         buttonSub.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                doOpeation(operation);
-                operation = "-";
+                /*doOpeation(operation);
+                operation = "-";*/
+                display.setText(display.getText() + "-");
             }
         });
 
         buttonStart.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                int secondValue = Integer.valueOf(display.getText());
+                /*int secondValue = Integer.valueOf(display.getText());
                 if ("+".equals(operation)) {
                     display.setText((firstValue + secondValue) + "");
                 }
@@ -162,14 +192,16 @@ public class CalcFrame extends JFrame {
                     display.setText((firstValue / secondValue) + "");
                 }
                 firstValue = 0;
-                operation = "";
+                operation = "";*/
+                display.setText(String.valueOf(eval(display.getText())));
             }
         });
 
         setLayout(new BorderLayout());
         add(display, BorderLayout.NORTH);
         add(buttonPanel, BorderLayout.CENTER);
-        add(buttonStart, BorderLayout.SOUTH);
+        add(buttonSpace, BorderLayout.SOUTH);
+        //add(buttonStart, BorderLayout.SOUTH);
         buttonPanel.add(button0);
         buttonPanel.add(button1);
         buttonPanel.add(button2);
@@ -185,6 +217,9 @@ public class CalcFrame extends JFrame {
         buttonPanel.add(buttonMul);
         buttonPanel.add(buttonDivide);
         buttonPanel.add(buttonBack);
+        buttonPanel.add(buttonLeftBracket);
+        buttonPanel.add(buttonRightBracket);
+        buttonPanel.add(buttonStart);
         setVisible(true);
     }
 
@@ -236,11 +271,11 @@ public class CalcFrame extends JFrame {
     }
 
     public static void main(String[] args) {
-        System.out.println("Write an expresion");
+        /*System.out.println("Write an expresion");
         Scanner scanner = new Scanner(System.in);
         String expresion = scanner.nextLine();
         //System.out.println(inPolishNotation(expresion));
-        System.out.println(eval(expresion));
+        System.out.println(eval(expresion));*/
         new CalcFrame();
     }
 
@@ -300,11 +335,19 @@ public class CalcFrame extends JFrame {
                 someOpers.add('(');
 
             } else if (c == ')') {
-
-                while (someOpers.getLast() != '(') {
-                    letGo(someInts, someOpers.removeLast());
+                // проверим вдруг не правильно расставили кавычки
+                try {
+                    while (someOpers.getLast() != '(') {
+                        letGo(someInts, someOpers.removeLast());
+                        if (someOpers.isEmpty()) {
+                            throw new IncorrectString("missing '('");
+                        }
+                    }
+                    someOpers.removeLast();
+                } catch (IncorrectString ex) {
+                    System.out.println(ex.getMessage());
                 }
-                someOpers.removeLast();
+
 
             } else if (isOperator(c)) {
                 while (!someOpers.isEmpty() &&
@@ -315,7 +358,7 @@ public class CalcFrame extends JFrame {
                 }
                 someOpers.add(c);
 
-            } else if(c != ' ') {
+            } else if (c != ' ') {
                 String operand = "";
                 while (i < s.length() &&
                         Character.isDigit(s.charAt(i))) {
