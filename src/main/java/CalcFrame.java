@@ -1,7 +1,10 @@
+import sun.nio.cs.ext.MacThai;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.geom.Arc2D;
 import java.util.LinkedList;
 import java.util.Scanner;
 import java.util.Stack;
@@ -12,7 +15,7 @@ import java.util.Stack;
 public class CalcFrame extends JFrame {
 
     JTextArea display = new JTextArea();
-    JPanel buttonPanel = new JPanel(new GridLayout(3, 5));
+    JPanel buttonPanel = new JPanel(new GridLayout(5, 5));
     JButton button0 = new JButton("0");
     JButton button1 = new JButton("1");
     JButton button2 = new JButton("2");
@@ -24,7 +27,7 @@ public class CalcFrame extends JFrame {
     JButton button8 = new JButton("8");
     JButton button9 = new JButton("9");
     JButton buttonSum = new JButton("+");
-    JButton buttonBack = new JButton("C");
+    JButton buttonBackspace = new JButton("←");
     JButton buttonDivide = new JButton("/");
     JButton buttonSub = new JButton("-");
     JButton buttonMul = new JButton("*");
@@ -32,6 +35,13 @@ public class CalcFrame extends JFrame {
     JButton buttonSpace = new JButton("Space");
     JButton buttonLeftBracket = new JButton("(");
     JButton buttonRightBracket = new JButton(")");
+    JButton buttonPi = new JButton("π");
+    JButton buttonFactorial = new JButton("n!");
+    JButton buttonInvertionSign = new JButton("±");
+    JButton buttonDot = new JButton(".");
+    JButton buttonCleaneAll = new JButton("CE");
+    JButton buttonClean = new JButton("C");
+
     int firstValue = 0;
     String operation = "";
 
@@ -129,13 +139,55 @@ public class CalcFrame extends JFrame {
             }
         });
 
-        buttonBack.addActionListener(new ActionListener() {
+        buttonBackspace.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String temp = display.getText();
                 if (temp.length() > 0) {
                     display.setText(temp.substring(0, temp.length() - 1));
                 }
+            }
+        });
+
+        buttonClean.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                display.setText("");
+            }
+        });
+
+        buttonCleaneAll.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                display.setText("");
+            }
+        });
+
+        buttonPi.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                display.setText(display.getText() + "π");
+            }
+        });
+
+        buttonFactorial.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                display.setText(display.getText() + "!");
+            }
+        });
+
+        buttonInvertionSign.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                display.setText(display.getText() + "±");
+            }
+        });
+
+        buttonDot.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                display.setText(display.getText() + ".");
             }
         });
 
@@ -193,33 +245,48 @@ public class CalcFrame extends JFrame {
                 }
                 firstValue = 0;
                 operation = "";*/
-                display.setText(String.valueOf(eval(display.getText())));
+                try{
+                display.setText(String.valueOf(eval(display.getText())));}
+                catch (Exception ex) {
+                    display.setText("Error");
+                }
             }
         });
 
         setLayout(new BorderLayout());
         add(display, BorderLayout.NORTH);
         add(buttonPanel, BorderLayout.CENTER);
-        add(buttonSpace, BorderLayout.SOUTH);
-        //add(buttonStart, BorderLayout.SOUTH);
-        buttonPanel.add(button0);
+
+        buttonPanel.add(buttonSpace);
+        buttonPanel.add(buttonCleaneAll);
+        buttonPanel.add(buttonClean);
+        buttonPanel.add(buttonBackspace);
+        buttonPanel.add(buttonDivide);
+
+        buttonPanel.add(buttonPi);
         buttonPanel.add(button1);
         buttonPanel.add(button2);
         buttonPanel.add(button3);
+        buttonPanel.add(buttonMul);
+
+        buttonPanel.add(buttonFactorial);
         buttonPanel.add(button4);
         buttonPanel.add(button5);
         buttonPanel.add(button6);
+        buttonPanel.add(buttonSub);
+
+        buttonPanel.add(buttonInvertionSign);
         buttonPanel.add(button7);
         buttonPanel.add(button8);
         buttonPanel.add(button9);
         buttonPanel.add(buttonSum);
-        buttonPanel.add(buttonSub);
-        buttonPanel.add(buttonMul);
-        buttonPanel.add(buttonDivide);
-        buttonPanel.add(buttonBack);
+
         buttonPanel.add(buttonLeftBracket);
         buttonPanel.add(buttonRightBracket);
+        buttonPanel.add(button0);
+        buttonPanel.add(buttonDot);
         buttonPanel.add(buttonStart);
+
         setVisible(true);
     }
 
@@ -251,6 +318,8 @@ public class CalcFrame extends JFrame {
         int resultPriority;
         switch (operator) {
             case '^':
+            case '±':
+            case '!':
                 resultPriority = 4;
                 break;
             case '*':
@@ -275,10 +344,15 @@ public class CalcFrame extends JFrame {
         Scanner scanner = new Scanner(System.in);
         String expresion = scanner.nextLine();
         //System.out.println(inPolishNotation(expresion));
-        System.out.println(eval(expresion));*/
+        try {
+        System.out.println(eval(expresion));}
+        catch (Exception ex) {
+            System.out.println("Can't calculate! " + ex.getMessage());
+        }*/
         new CalcFrame();
     }
 
+    // Переводит строку в обратную польскую нотацию
     public static String inPolishNotation(String expression) {
         expression = "(" + expression;
         expression += ")";
@@ -323,9 +397,9 @@ public class CalcFrame extends JFrame {
         return rezNotation;
     }
 
-    static int eval(String s) {
+    static double eval(String s) throws Exception{
 
-        LinkedList<Integer> someInts = new LinkedList<Integer>();
+        LinkedList<Double> someInts = new LinkedList<Double>();
         LinkedList<Character> someOpers = new LinkedList<Character>();
 
         for (int i = 0; i < s.length(); i++) {
@@ -358,16 +432,18 @@ public class CalcFrame extends JFrame {
                 }
                 someOpers.add(c);
 
+            } else if (c == 'π') {
+                someInts.add(Math.PI);
             } else if (c != ' ') {
                 String operand = "";
                 while (i < s.length() &&
-                        Character.isDigit(s.charAt(i))) {
+                        (Character.isDigit(s.charAt(i)) || s.charAt(i) == '.' )) {
 
                     operand += s.charAt(i++);
 
                 }
                 --i;
-                someInts.add(Integer.parseInt(operand));
+                someInts.add(Double.parseDouble(operand));
 
             }
         }
@@ -382,32 +458,39 @@ public class CalcFrame extends JFrame {
 
     }
 
-    static void letGo(LinkedList<Integer> st, char oper) {
+    static void letGo(LinkedList<Double> st, char oper) {
 
-        int someOne = st.removeLast();
-        int someTwo = st.removeLast();
+        try {
+            if (st.size() < 2) {
+                throw new IncorrectString("The expression has wroten incorrect! You have excess symbol of operation!");
+            }
+            double someOne = st.removeLast();
+            double someTwo = st.removeLast();
 
-        switch (oper) {
-            case '+':
-                st.add(someTwo + someOne);
-                break;
-            case '-':
-                st.add(someTwo - someOne);
-                break;
-            case '*':
-                st.add(someTwo * someOne);
-                break;
-            case '/':
-                st.add(someTwo / someOne);
-                break;
-            default:
-                System.out.println("Oops");
+            switch (oper) {
+                case '+':
+                    st.add(someTwo + someOne);
+                    break;
+                case '-':
+                    st.add(someTwo - someOne);
+                    break;
+                case '*':
+                    st.add(someTwo * someOne);
+                    break;
+                case '/':
+                    st.add(someTwo / someOne);
+                    break;
+                default:
+                    throw new IncorrectString("Can't do opetation " + oper + " between " + someOne + " & " + someTwo);
+            }
+        } catch (IncorrectString ex) {
+            System.out.println(ex.getMessage());
         }
     }
 
     static boolean isOperator(char c) {
 
-        return c == '+' || c == '-' || c == '*' || c == '/';
+        return c == '+' || c == '-' || c == '*' || c == '/' || c == '!' || c== '±';
 
     }
 
